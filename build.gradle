@@ -1,0 +1,47 @@
+import java.nio.file.Paths
+
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.1.2' // Use the latest version available
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+        url = 'https://maven.pkg.github.com/ballerina-platform/*'
+        credentials {
+            username System.getenv("publishUser")
+            password System.getenv("publishPAT")
+        }
+    }
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'Runner'
+        )
+    }
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    implementation 'org.ballerinalang:ballerina-cli:2201.9.0-SNAPSHOT'
+    implementation group: 'org.ballerinalang', name: 'ballerina-lang', version: '2201.9.0-SNAPSHOT'
+    implementation group: 'org.ballerinalang', name: 'ballerina-runtime', version: '2201.9.0-SNAPSHOT'
+    implementation files('src/main/resources/baltool.jar')
+}
+
+test {
+    useJUnitPlatform()
+}
+
+tasks.withType(JavaExec).configureEach {
+    systemProperty "ballerina.home", Paths.get(System.getenv("BALLERINA_HOME")).resolve("distributions")
+            .resolve("ballerina-2201.9.0").toString()
+}
